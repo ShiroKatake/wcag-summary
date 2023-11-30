@@ -1,7 +1,7 @@
 export default {
   name: 'principle',
   type: 'document',
-  title: 'Accessibility Principle',
+  title: 'Principle',
   fields: [
     {
       name: 'id',

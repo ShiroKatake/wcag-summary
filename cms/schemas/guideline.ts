@@ -4,9 +4,9 @@ export default {
   title: 'Guideline',
   fields: [
     {
-      name: 'principle',
+      name: 'principleRef',
       type: 'reference',
-      to: {type: 'principle'},
+      to: [{ type: 'principle' }],
       title: 'Principle',
     },
     {
@@ -40,13 +40,12 @@ export default {
   ],
   preview: {
     select: {
-      principleId: 'principle.id',
+      principleId: 'principleRef.id',
       title: 'name',
       id: 'id'
     },
     prepare(select:any) {
       const {principleId, id, title} = select
-      console.log(principleId)
       return {
         title: `${principleId}.${id} ${title}`,
       }
