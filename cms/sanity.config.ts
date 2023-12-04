@@ -1,14 +1,36 @@
 import {defineConfig} from 'sanity'
-import {ListItemBuilder, StructureBuilder, deskTool} from 'sanity/desk'
+import {StructureBuilder, deskTool} from 'sanity/desk'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemas'
-import {client} from './sanityClient';
+import {client} from './sanityClient'
 
 const getGuidelines = async (S: StructureBuilder) => {
-  let guidelineStructure: ListItemBuilder[] = []
-  const res = await client.fetch('*[_type == "guideline"]{id, "principleId": principleRef->id, name} | order(id asc) | order(principleId asc)')
-  
+  let guidelineStructure: any[] = []
+  const res = await client.fetch(
+    '*[_type == "guideline"]{id, "principleId": principleRef->id, "principleName": principleRef->name, name} | order(id asc) | order(principleId asc)'
+  )
+
   res.forEach((guideline: any) => {
+    if (guideline.id == '1') {
+      if (guideline.principleId != '1') {
+        guidelineStructure.push(
+          S.divider()
+        )
+      }      
+      guidelineStructure.push(
+        S.listItem()
+          .title(`${guideline.principleId}. ${guideline.principleName}`)
+          .id(`${guideline.principleId}`)
+          .showIcon(false)
+          .child(
+            S.documentList()
+              .apiVersion('v2023-05-03')
+              .title('Priciple')
+              .filter('_type == "principle" && id == $principleId')
+              .params({principleId: guideline.principleId})
+          )
+      )
+    }
     guidelineStructure.push(
       S.listItem()
         .title(`${guideline.principleId}.${guideline.id} ${guideline.name}`)
@@ -34,12 +56,14 @@ export default defineConfig({
   projectId: 'qq18jngx',
   dataset: 'production',
 
-  plugins: [deskTool({
-    structure: async (S) =>
-    S.list()
-      .title('Principles')
-      .items(await getGuidelines(S))
-  }), visionTool()],
+  plugins: [
+    deskTool({
+      structure: async (S) =>
+        S.list()
+          .title('Guidelines')
+          .items(await getGuidelines(S)),
+    }), visionTool(),
+  ],
 
   schema: {
     types: schemaTypes,
