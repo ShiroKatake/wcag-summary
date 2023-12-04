@@ -5,47 +5,26 @@ import {schemaTypes} from './schemas'
 import {client} from './sanityClient';
 
 const getGuidelines = async (S: StructureBuilder) => {
-  let principleStructure: ListItemBuilder[] = []
-  const res = await client.fetch(`{
-    'principle': *[_type == "principle"]{id, name} | order(id asc),
-    'guideline': *[_type == "guideline"]{id, "principleId": principleRef->id, name} | order(principleId asc) | order(id asc)
-  }`)
+  let guidelineStructure: ListItemBuilder[] = []
+  const res = await client.fetch('*[_type == "guideline"]{id, "principleId": principleRef->id, name} | order(id asc) | order(principleId asc)')
   
-  const guidelines = (principleId: any) => {
-    let guidelineStructure: ListItemBuilder[] = []
-    res.guideline.forEach((guideline: any) => {
-      principleId == guideline.principleId && guidelineStructure.push(
-        S.listItem()
-          .title(`${guideline.principleId}.${guideline.id} ${guideline.name}`)
-          .id(`${guideline.principleId}.${guideline.id}`)
-          .child(
-            S.documentList()
-              .apiVersion('v2023-05-03')
-              .title('Criterions')
-              .filter('_type == "criterion" && guidelineRef->id == $id && guidelineRef->principleRef->id == $principleId')
-              .params({id: guideline.id, principleId: guideline.principleId})
-              .defaultOrdering([{ field: 'id', direction: 'asc' }])
-          )
-      )
-    });
-    return guidelineStructure
-  }
-
-  res.principle.forEach((principle: any) => {
-    principleStructure.push(
+  res.forEach((guideline: any) => {
+    guidelineStructure.push(
       S.listItem()
-        .title(`${principle.id}. ${principle.name}`)
-        .id(`${principle.id}`)
-        .child(principleId =>
-          {
-            return S.list()
-            .title('Guidelines')
-            .items(guidelines(principleId))}
+        .title(`${guideline.principleId}.${guideline.id} ${guideline.name}`)
+        .id(`${guideline.principleId}.${guideline.id}`)
+        .child(
+          S.documentList()
+            .apiVersion('v2023-05-03')
+            .title('Criterions')
+            .filter('_type == "criterion" && guidelineRef->id == $guidelineId && guidelineRef->principleRef->id == $principleId')
+            .params({guidelineId: guideline.id, principleId: guideline.principleId})
+            .defaultOrdering([{ field: 'id', direction: 'asc' }])
         )
     )
   });
 
-  return principleStructure
+  return guidelineStructure
 }
 
 export default defineConfig({
