@@ -77,12 +77,14 @@ export default {
       principleId: 'guidelineRef.principleRef.id',
       guidelineId: 'guidelineRef.id',
       title: 'name',
-      id: 'id'
+      id: 'id',
+      level: 'level'
     },
     prepare(select: any) {
-      const { principleId, guidelineId, id, title } = select
+      const { principleId, guidelineId, id, title, level } = select
       return {
         title: `${principleId}.${guidelineId}.${id} ${title}`,
+        subtitle: `Level: ${level}`,
       }
     }
   }
